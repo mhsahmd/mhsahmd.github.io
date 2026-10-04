@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Buku Tamu QR</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <!-- QRCode.js -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+
+    <style>
+        /* CSS Variables for Theme */
+        :root {
+            --primary: #8B5E3C;
+            --primary-light: #A67C52;
+            --accent: #C9A87C;
+            --background: #FDF8F4;
+            --card-bg: #FFFFFF;
+            --text-main: #3D2B1F;
+            --text-light: #7A5F45;
+            --success: #4CAF50;
+            --error: #E53935;
+            --border: #E8E0D5;
+            
+            --font-heading: 'Playfair Display', serif;
+            --font-body: 'Poppins', sans-serif;
+            
+            --shadow: 0 4px 15px rgba(139, 94, 60, 0.08);
+            --shadow-hover: 0 8px 25px rgba(139, 94, 60, 0.15);
+            --transition: all 0.3s ease;
+        }
+
+        /* Reset & Base Styles */
+        #buku-tamu-admin-wrapper {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: var(--font-body);
+            color: var(--text-main);
+            background-color: var(--background);
+            min-height: 100vh;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        #buku-tamu-admin-wrapper * {
+            box-sizing: inherit;
+        }
+
+        /* Typography */
+        #buku-tamu-admin-wrapper h1, 
+        #buku-tamu-admin-wrapper h2, 
+        #buku-tamu-admin-wrapper h3, 
+        #buku-tamu-admin-wrapper .floral-title {
+            font-family: var(--font-heading);
+            color: var(--primary);
+            margin-top: 0;
+        }
+
+        /* Layout Container */
+        .admin-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        .admin-header {
+            text-align: center;
+            padding: 40px 20px;
+            background: var(--card-bg);
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .admin-header::before, .admin-header::after {
+            content: '✿';
+            font-size: 40px;
+            color: var(--accent);
+            opacity: 0.3;
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        
+        .admin-header::before { left: 40px; }
+        .admin-header::after { right: 40px; }
+
+        .admin-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .admin-header p {
+            color: var(--text-light);
+            font-size: 1.1rem;
+            margin: 0;
+        }
+
+        /* Navigation Tabs */
+        .admin-nav {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .nav-tab {
+            padding: 12px 25px;
+            background: transparent;
+            border: 2px solid var(--accent);
+            color: var(--primary);
+            border-radius: 30px;
+            font-family: var(--font-body);
+            font-weight: 500;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .nav-tab:hover {
+            background: var(--accent);
+            color: #fff;
+        }
+
+        .nav-tab.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: #fff;
+            box-shadow: var(--shadow);
+        }
+
+        /* Tab Content */
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Cards & Grids */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            padding: 30px 20px;
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            transition: var(--transition);
+            border-bottom: 4px solid var(--accent);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .stat-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            display: inline-block;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 600;
+            color: var(--primary);
+            font-family: var(--font-heading);
+            margin: 0 0 5px 0;
+            line-height: 1;
+        }
+
+        .stat-label {
+            color: var(--text-light);
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Panel/Card Generic */
+        .admin-panel {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        /* Forms & Inputs */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--primary);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-family: var(--font-body);
+            font-size: 1rem;
+            color: var(--text-main);
+            transition: var(--transition);
+            background: #FAFAFA;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(201, 168, 124, 0.2);
+            background: #fff;
+        }
+        
+        textarea.form-control {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-family: var(--font-body);
+            font-weight: 500;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: var(--transition);
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-light);
+            box-shadow: 0 4px 10px rgba(139, 94, 60, 0.3);
+        }
+        
+        .btn-accent {
+            background: var(--accent);
+            color: #fff;
+        }
+        
+        .btn-accent:hover {
+            background: #b59468;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-outline:hover {
+            background: var(--primary);
+            color: #fff;
+        }
+        
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 0.85rem;
+            border-radius: 6px;
+        }
+        
+        .btn-icon {
+            padding: 6px;
+            font-size: 1.1rem;
+        }
+
+        .btn-success { background: var(--success); color: white; }
+        .btn-success:hover { background: #43a047; }
+        
+        .btn-danger { background: var(--error); color: white; }
+        .btn-danger:hover { background: #d32f2f; }
+
+        /* Table Styles */
+        .table-responsive {
+            overflow-x: auto;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            white-space: nowrap;
+        }
+
+        .admin-table th, .admin-table td {
+            padding: 15px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .admin-table th {
+            background: var(--background);
+            font-weight: 600;
+            color: var(--primary);
+            font-family: var(--font-heading);
+            letter-spacing: 0.5px;
+        }
+
+        .admin-table tbody tr {
+            transition: var(--transition);
+        }
+
+        .admin-table tbody tr:hover {
+            background: #FDF8F4;
+        }
+        
+        .admin-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Badges */
+        .badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            display: inline-block;
+        }
+
+        .badge-success {
+            background: rgba(76, 175, 80, 0.1);
+            color: var(--success);
+            border: 1px solid rgba(76, 175, 80, 0.2);
+        }
+
+        .badge-pending {
+            background: rgba(122, 95, 69, 0.1);
+            color: var(--text-light);
+            border: 1px solid rgba(122, 95, 69, 0.2);
+        }
+
+        /* Search & Filters */
+        .filter-bar {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .search-box {
+            flex-grow: 1;
+            min-width: 250px;
+            position: relative;
+        }
+        
+        .search-box input {
+            padding-left: 40px;
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-light);
+        }
+        
+        .filter-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(61, 43, 31, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition);
+            backdrop-filter: blur(3px);
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 30px;
+            width: 90%;
+            max-width: 400px;
+            position: relative;
+            transform: scale(0.9);
+            transition: var(--transition);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-light);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .modal-close:hover {
+            color: var(--error);
+        }
+
+        #qrcode-container {
+            margin: 20px auto;
+            display: flex;
+            justify-content: center;
+            background: #fff;
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px dashed var(--accent);
+            width: 230px;
+            height: 230px;
+        }
+        
+        .modal-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        /* Loading Overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--background);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease;
+        }
+        
+        .loading-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--border);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Grid Layouts for Forms */
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .admin-header::before, .admin-header::after {
+                display: none;
+            }
+            .admin-header h1 {
+                font-size: 2rem;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 0;
+            }
+            .panel-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .filter-bar {
+                flex-direction: column;
+            }
+            .search-box {
+                width: 100%;
+            }
+            .filter-group {
+                width: 100%;
+                justify-content: space-between;
+            }
+            .filter-group .btn {
+                flex: 1;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            .nav-tab {
+                width: 100%;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div id="buku-tamu-admin-wrapper">
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+        <h2 class="floral-title">Memuat Data...</h2>
+    </div>
+
+    <div class="admin-container">
+        <!-- Header -->
+        <header class="admin-header">
+            <h1 id="header-title">Admin Dashboard</h1>
+            <p id="header-subtitle">Kelola daftar tamu dan kehadiran undangan</p>
+        </header>
+
+        <!-- Navigation -->
+        <nav class="admin-nav">
+            <button class="nav-tab active" onclick="switchTab('dashboard')">📊 Dashboard</button>
+            <button class="nav-tab" onclick="switchTab('tamu')">👥 Daftar Tamu</button>
+            <button class="nav-tab" onclick="switchTab('tambah')">➕ Tambah Tamu</button>
+        </nav>
+
+        <!-- Tab: Dashboard -->
+        <div id="tab-dashboard" class="tab-content active">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">💌</div>
+                    <h3 class="stat-number" id="stat-total">0</h3>
+                    <div class="stat-label">Total Undangan</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">✅</div>
+                    <h3 class="stat-number" id="stat-hadir">0</h3>
+                    <div class="stat-label">Sudah Hadir (Undangan)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">⏳</div>
+                    <h3 class="stat-number" id="stat-belum">0</h3>
+                    <div class="stat-label">Belum Hadir (Undangan)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">👥</div>
+                    <h3 class="stat-number" id="stat-tamu-total">0</h3>
+                    <div class="stat-label">Total Tamu (Orang)</div>
+                </div>
+            </div>
+            
+            <div class="admin-panel">
+                <div class="panel-header">
+                    <h2 class="floral-title">Informasi Acara</h2>
+                    <button class="btn btn-outline" onclick="loadData()"><span style="font-size:1.2rem">🔄</span> Refresh Data</button>
+                </div>
+                <p><strong>Tanggal:</strong> <span id="info-date">-</span></p>
+                <p><strong>Tempat:</strong> <span id="info-venue">-</span></p>
+                <p><em>Data diperbarui otomatis setiap 30 detik.</em></p>
+            </div>
+        </div>
+
+        <!-- Tab: Daftar Tamu -->
+        <div id="tab-tamu" class="tab-content">
+            <div class="admin-panel">
+                <div class="panel-header">
+                    <h2 class="floral-title">Daftar Tamu Undangan</h2>
+                    <button class="btn btn-primary" onclick="exportCSV()">📥 Export CSV</button>
+                </div>
+                
+                <div class="filter-bar">
+                    <div class="search-box">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="searchInput" class="form-control" placeholder="Cari nama atau nomor HP..." onkeyup="filterTable()">
+                    </div>
+                    <div class="filter-group">
+                        <button class="btn btn-outline active" id="btn-filter-all" onclick="setFilter('all')">Semua</button>
+                        <button class="btn btn-outline" id="btn-filter-hadir" onclick="setFilter('hadir')">Hadir</button>
+                        <button class="btn btn-outline" id="btn-filter-belum" onclick="setFilter('belum')">Belum</button>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="admin-table" id="guestsTable">
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>Nama Tamu</th>
+                                <th>No. HP</th>
+                                <th>Jml</th>
+                                <th>Status</th>
+                                <th>Waktu Hadir</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="guestsTableBody">
+                            <!-- Data will be populated here -->
+                            <tr>
+                                <td colspan="7" style="text-align: center;">Memuat data...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Tambah Tamu -->
+        <div id="tab-tambah" class="tab-content">
+            <div class="admin-panel">
+                <h2 class="floral-title">Tambah Tamu Baru</h2>
+                <form id="addGuestForm" onsubmit="handleAddGuest(event)">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Nama Lengkap Tamu *</label>
+                            <input type="text" id="addName" class="form-control" required placeholder="Contoh: Budi Santoso">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Nomor HP (Opsional)</label>
+                            <input type="text" id="addPhone" class="form-control" placeholder="Contoh: 08123456789">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Jumlah Tamu *</label>
+                        <input type="number" id="addJumlah" class="form-control" required min="1" value="1" style="max-width: 150px;">
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="btnSubmitGuest">💾 Simpan Tamu</button>
+                </form>
+            </div>
+            
+            <div class="admin-panel">
+                <h2 class="floral-title">Tambah Banyak Tamu (Bulk)</h2>
+                <p>Masukkan nama tamu, satu nama per baris.</p>
+                <form id="addBulkForm" onsubmit="handleBulkAdd(event)">
+                    <div class="form-group">
+                        <textarea id="bulkNames" class="form-control" required placeholder="Andi&#10;Budi&#10;Citra"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-accent" id="btnSubmitBulk">💾 Tambah Semua</button>
+                </form>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- QR Code Modal -->
+    <div class="modal-overlay" id="qrModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal()">×</button>
+            <h2 class="floral-title" id="modalGuestName">Nama Tamu</h2>
+            <div class="badge badge-pending" id="modalGuestStatus" style="margin-bottom: 15px;">Belum Hadir</div>
+            
+            <div id="qrcode-container"></div>
+            
+            <p style="font-size: 0.9rem; margin-bottom: 20px; color: var(--text-light); word-break: break-all;" id="modalQrCodeText"></p>
+            
+            <div class="modal-actions">
+                <button class="btn btn-primary" onclick="shareViaWhatsApp()"><span style="font-size:1.1rem">💬</span> Kirim via WhatsApp</button>
+                <button class="btn btn-outline" onclick="copyInvitationLink()"><span style="font-size:1.1rem">📋</span> Salin Link Undangan</button>
+                <button class="btn btn-outline" onclick="downloadQR()"><span style="font-size:1.1rem">⬇️</span> Download QR</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    /** 
+     * CONFIGURATION
+     */
+    const API_URL = 'https://script.google.com/macros/s/AKfycbzOaN2lNR_Qi6KXYpH-8O0TgER9iU0rWzClSFkh1LLmfrp535mI8ONPJWQ5yvxKxqXu/exec'; // Ganti dengan URL Web App Apps Script
+    const UNDANGAN_URL = 'YOUR_UNDANGAN_PAGE_URL_HERE'; // Ganti dengan URL halaman depan (Buku Tamu / Scan)
+    const WEDDING_TITLE = 'Pernikahan Rezi & Adel';
+    const WEDDING_DATE = '17 Oktober 2026';
+    const WEDDING_VENUE = 'Kediaman Wanita, Jakarta';
+
+    // Global State
+    let guestsData = [];
+    let currentFilter = 'all';
+    let qrCodeObj = null;
+    let currentGuestForModal = null;
+    let autoRefreshInterval;
+
+    /**
+     * INITIALIZATION
+     */
+    document.addEventListener('DOMContentLoaded', () => {
+        // Set info text
+        document.getElementById('header-title').innerText = 'Admin - ' + WEDDING_TITLE;
+        document.getElementById('info-date').innerText = WEDDING_DATE;
+        document.getElementById('info-venue').innerText = WEDDING_VENUE;
+
+        // Initialize QRCode instance
+        qrCodeObj = new QRCode(document.getElementById("qrcode-container"), {
+            width: 200,
+            height: 200,
+            colorDark : "#3D2B1F",
+            colorLight : "#ffffff",
+            correctLevel : QRCode.CorrectLevel.H
+        });
+
+        // Initial Data Load
+        loadData();
+
+        // Setup Auto Refresh (every 30 seconds)
+        autoRefreshInterval = setInterval(() => {
+            if(document.getElementById('tab-dashboard').classList.contains('active')){
+                loadData(true); // silent refresh
+            }
+        }, 30000);
+    });
+
+    /**
+     * TAB MANAGEMENT
+     */
+    function switchTab(tabId) {
+        // Update Buttons
+        document.querySelectorAll('.nav-tab').forEach(btn => btn.classList.remove('active'));
+        event.currentTarget.classList.add('active');
+
+        // Update Content
+        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+        document.getElementById(`tab-${tabId}`).classList.add('active');
+        
+        if(tabId === 'tamu' && guestsData.length === 0) {
+            loadData();
+        }
+    }
+
+    /**
+     * API CALLS & DATA HANDLING
+     */
+    async function loadData(silent = false) {
+        if (!silent) showLoading(true);
+        
+        try {
+            console.log('Fetching guests from:', `${API_URL}?action=getGuests`);
+            const response = await fetch(`${API_URL}?action=getGuests`);
+            if (!response.ok) throw new Error('HTTP error ' + response.status);
+            const result = await response.json();
+            console.log('Server response:', result);
+            
+            if (result.success === true || result.status === 'success') {
+                guestsData = result.data || [];
+                updateDashboardStats();
+                renderTable();
+            } else {
+                throw new Error(result.message || 'Gagal mengambil data dari spreadsheet');
+            }
+        } catch (error) {
+            console.error('Error fetching data:', error);
+            if(!silent) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Koneksi Gagal',
+                    html: `<b>Tidak dapat terhubung ke Apps Script:</b><br><small style="color:#d32f2f;">${escapeHtml(error.message)}</small><br><br>
+                           <div style="text-align:left; font-size:0.85rem; background:#f9f9f9; padding:10px; border-radius:8px;">
+                             1. Pastikan Web App Apps Script di-deploy dengan akses <b>"Anyone"</b>.<br>
+                             2. Pastikan SPREADSHEET_ID di <code>Code.gs</code> sudah diisi.<br>
+                             3. Pastikan URL berakhiran <code>/exec</code>, bukan <code>/dev</code>.
+                           </div>`,
+                    confirmButtonColor: '#8B5E3C'
+                });
+            }
+        } finally {
+            if (!silent) showLoading(false);
+        }
+    }
+
+    function updateDashboardStats() {
+        const totalUndangan = guestsData.length;
+        let hadir = 0;
+        let belum = 0;
+        let tamuTotal = 0;
+
+        guestsData.forEach(guest => {
+            if (guest.status && guest.status.toLowerCase() === 'hadir') {
+                hadir++;
+                tamuTotal += parseInt(guest.jumlah || guest.pax) || 1;
+            } else {
+                belum++;
+            }
+        });
+
+        document.getElementById('stat-total').innerText = totalUndangan;
+        document.getElementById('stat-hadir').innerText = hadir;
+        document.getElementById('stat-belum').innerText = belum;
+        document.getElementById('stat-tamu-total').innerText = tamuTotal;
+    }
+
+    /**
+     * TABLE RENDERING & FILTERING
+     */
+    function renderTable() {
+        const tbody = document.getElementById('guestsTableBody');
+        tbody.innerHTML = '';
+        
+        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+        
+        let filteredData = guestsData.filter(guest => {
+            // Apply Status Filter
+            if (currentFilter === 'hadir' && (!guest.status || guest.status.toLowerCase() !== 'hadir')) return false;
+            if (currentFilter === 'belum' && guest.status && guest.status.toLowerCase() === 'hadir') return false;
+            
+            // Apply Search Filter
+            const guestName = (guest.nama || guest.name || '').toLowerCase();
+            const guestPhone = (guest.no_hp || guest.nohp || '').toLowerCase();
+            return guestName.includes(searchTerm) || guestPhone.includes(searchTerm);
+        });
+
+        if (filteredData.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; py-4">Tidak ada data tamu ditemukan.</td></tr>`;
+            return;
+        }
+
+        filteredData.forEach((guest, index) => {
+            const isHadir = guest.status && guest.status.toLowerCase() === 'hadir';
+            const statusBadge = isHadir 
+                ? '<span class="badge badge-success">Hadir</span>' 
+                : '<span class="badge badge-pending">Belum</span>';
+            const guestQR = guest.qrCode || guest.qr || '';
+            const guestPhone = guest.no_hp || guest.nohp || '-';
+            const guestTime = guest.timestamp || guest.waktuHadir || '-';
+                
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${index + 1}</td>
+                <td><strong>${escapeHtml(guest.nama || guest.name || '-')}</strong></td>
+                <td>${escapeHtml(guestPhone)}</td>
+                <td>${escapeHtml(guest.jumlah || guest.pax || '1')}</td>
+                <td>${statusBadge}</td>
+                <td>${isHadir ? escapeHtml(guestTime) : '-'}</td>
+                <td>
+                    <button class="btn btn-sm btn-primary btn-icon" title="Lihat QR Code" onclick='openModal(${JSON.stringify(guest).replace(/'/g, "&#39;")})'>QR</button>
+                    <button class="btn btn-sm btn-danger btn-icon" title="Hapus Tamu" onclick="deleteGuest('${guestQR}')">🗑️</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function setFilter(filter) {
+        currentFilter = filter;
+        document.getElementById('btn-filter-all').classList.remove('active');
+        document.getElementById('btn-filter-hadir').classList.remove('active');
+        document.getElementById('btn-filter-belum').classList.remove('active');
+        
+        document.getElementById(`btn-filter-${filter}`).classList.add('active');
+        renderTable();
+    }
+
+    function filterTable() {
+        renderTable();
+    }
+
+    /**
+     * ADD GUEST(S)
+     */
+    async function handleAddGuest(e) {
+        e.preventDefault();
+        
+        const nama = document.getElementById('addName').value.trim();
+        const no_hp = document.getElementById('addPhone').value.trim();
+        const jumlah = parseInt(document.getElementById('addJumlah').value) || 1;
+        
+        const btn = document.getElementById('btnSubmitGuest');
+        btn.disabled = true;
+        btn.innerHTML = 'Menyimpan...';
+        showLoading(true);
+
+        try {
+            const payload = {
+                action: 'addGuest',
+                data: {
+                    nama: nama,
+                    nohp: no_hp,
+                    jumlah: jumlah
+                },
+                nama: nama,
+                nohp: no_hp,
+                no_hp: no_hp,
+                jumlah: jumlah
+            };
+
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                body: JSON.stringify(payload)
+            });
+            
+            const result = await response.json();
+            
+            if (result.success === true || result.status === 'success') {
+                document.getElementById('addGuestForm').reset();
+                document.getElementById('addJumlah').value = 1;
+                
+                // Show success and modal
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil!',
+                    text: 'Tamu berhasil ditambahkan.',
+                    confirmButtonColor: '#8B5E3C'
+                }).then(() => {
+                    // Refresh data in background
+                    loadData(true);
+                    // Open Modal for the new guest
+                    openModal(result.data || result.guest);
+                });
+            } else {
+                throw new Error(result.message || 'Gagal menyimpan data tamu');
+            }
+        } catch (error) {
+            Swal.fire('Error', error.message || 'Terjadi kesalahan', 'error');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '💾 Simpan Tamu';
+            showLoading(false);
+        }
+    }
+
+    async function handleBulkAdd(e) {
+        e.preventDefault();
+        
+        const namesText = document.getElementById('bulkNames').value;
+        const names = namesText.split('\n').map(n => n.trim()).filter(n => n.length > 0);
+        
+        if (names.length === 0) return;
+
+        const btn = document.getElementById('btnSubmitBulk');
+        btn.disabled = true;
+        btn.innerHTML = 'Menyimpan...';
+        showLoading(true);
+
+        try {
+            const payload = {
+                action: 'bulkAdd',
+                guests: names.map(n => ({ nama: n, nohp: '', jumlah: 1 })),
+                names: names
+            };
+
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                body: JSON.stringify(payload)
+            });
+            
+            const result = await response.json();
+            
+            if (result.success === true || result.status === 'success') {
+                document.getElementById('addBulkForm').reset();
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil!',
+                    text: `${names.length} tamu berhasil ditambahkan.`,
+                    confirmButtonColor: '#8B5E3C'
+                });
+                loadData(true); // Refresh data
+            } else {
+                throw new Error(result.message || 'Gagal menambahkan tamu');
+            }
+        } catch (error) {
+            Swal.fire('Error', error.message || 'Terjadi kesalahan', 'error');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '💾 Tambah Semua';
+            showLoading(false);
+        }
+    }
+    
+    /**
+     * DELETE GUEST
+     */
+    function deleteGuest(qrCode) {
+        if (!qrCode) {
+            Swal.fire('Error', 'Kode QR tidak valid', 'error');
+            return;
+        }
+
+        Swal.fire({
+            title: 'Hapus Tamu?',
+            text: "Data yang dihapus tidak dapat dikembalikan!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#E53935',
+            cancelButtonColor: '#8B5E3C',
+            confirmButtonText: 'Ya, Hapus!',
+            cancelButtonText: 'Batal'
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                showLoading(true);
+                try {
+                    const payload = { 
+                        action: 'deleteGuest', 
+                        qr: qrCode,
+                        qrCode: qrCode 
+                    };
+                    const response = await fetch(API_URL, {
+                        method: 'POST',
+                        body: JSON.stringify(payload)
+                    });
+                    const res = await response.json();
+                    
+                    if (res.success === true || res.status === 'success') {
+                        Swal.fire('Terhapus!', 'Data tamu berhasil dihapus.', 'success');
+                        loadData(true);
+                    } else {
+                        throw new Error(res.message || 'Gagal menghapus data tamu');
+                    }
+                } catch (error) {
+                    Swal.fire('Error', error.message || 'Gagal menghapus tamu', 'error');
+                } finally {
+                    showLoading(false);
+                }
+            }
+        });
+    }
+
+    /**
+     * MODAL & QR CODE & SHARING
+     */
+    function openModal(guest) {
+        if (!guest) return;
+        currentGuestForModal = guest;
+        const guestName = guest.nama || guest.name || 'Nama Tidak Diketahui';
+        document.getElementById('modalGuestName').innerText = guestName;
+        
+        const isHadir = guest.status && guest.status.toLowerCase() === 'hadir';
+        const statusEl = document.getElementById('modalGuestStatus');
+        if (isHadir) {
+            statusEl.className = 'badge badge-success';
+            statusEl.innerText = 'Hadir';
+        } else {
+            statusEl.className = 'badge badge-pending';
+            statusEl.innerText = 'Belum Hadir';
+        }
+
+        const qrCodeValue = guest.qrCode || guest.qr || '';
+        const fullLink = `${UNDANGAN_URL}?qr=${qrCodeValue}`;
+        document.getElementById('modalQrCodeText').innerText = qrCodeValue;
+        
+        // Generate QR
+        qrCodeObj.clear();
+        qrCodeObj.makeCode(fullLink);
+
+        document.getElementById('qrModal').classList.add('active');
+    }
+
+    function closeModal() {
+        document.getElementById('qrModal').classList.remove('active');
+        currentGuestForModal = null;
+    }
+
+    function shareViaWhatsApp() {
+        if (!currentGuestForModal) return;
+        
+        const nama = currentGuestForModal.nama || 'Bapak/Ibu/Saudara/i';
+        const qrCode = currentGuestForModal.qrCode || '';
+        const linkUndangan = `${UNDANGAN_URL}?qr=${qrCode}`;
+        
+        const message = `Bismillahirrahmanirrahim
+
+Kepada Yth. ${nama}
+
+Dengan memohon rahmat dan ridho Allah SWT, kami mengundang Bapak/Ibu/Saudara/i untuk menghadiri acara pernikahan kami.
+
+*${WEDDING_TITLE}*
+Tanggal: ${WEDDING_DATE}
+Tempat: ${WEDDING_VENUE}
+
+Silakan buka undangan digital Anda di:
+${linkUndangan}
+
+Mohon tunjukkan QR Code pada undangan saat hadir di acara.
+
+Terima kasih atas doa dan kehadirannya. 🙏`;
+
+        const encodedMessage = encodeURIComponent(message);
+        
+        // If phone number exists, try to send directly
+        let waUrl = `https://wa.me/?text=${encodedMessage}`;
+        if (currentGuestForModal.no_hp) {
+            // Clean phone number (replace leading 0 with 62)
+            let phone = currentGuestForModal.no_hp.replace(/\D/g, '');
+            if (phone.startsWith('0')) phone = '62' + phone.substring(1);
+            waUrl = `https://wa.me/${phone}?text=${encodedMessage}`;
+        }
+        
+        window.open(waUrl, '_blank');
+    }
+
+    function copyInvitationLink() {
+        if (!currentGuestForModal) return;
+        const qrCode = currentGuestForModal.qrCode || '';
+        const linkUndangan = `${UNDANGAN_URL}?qr=${qrCode}`;
+        
+        navigator.clipboard.writeText(linkUndangan).then(() => {
+            Swal.fire({
+                icon: 'success',
+                title: 'Tersalin!',
+                text: 'Link undangan berhasil disalin ke clipboard.',
+                timer: 1500,
+                showConfirmButton: false
+            });
+        }).catch(err => {
+            console.error('Failed to copy: ', err);
+            prompt("Salin link ini:", linkUndangan);
+        });
+    }
+
+    function downloadQR() {
+        const qrImage = document.querySelector('#qrcode-container img');
+        if (qrImage && qrImage.src) {
+            const a = document.createElement('a');
+            a.href = qrImage.src;
+            a.download = `QRCode_${currentGuestForModal.nama.replace(/\s+/g, '_')}.png`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        } else {
+            // Sometime qrcodejs uses canvas if img is not loaded
+            const canvas = document.querySelector('#qrcode-container canvas');
+            if(canvas) {
+                const a = document.createElement('a');
+                a.href = canvas.toDataURL("image/png");
+                a.download = `QRCode_${currentGuestForModal.nama.replace(/\s+/g, '_')}.png`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            }
+        }
+    }
+
+    /**
+     * UTILS
+     */
+    function exportCSV() {
+        if (guestsData.length === 0) {
+            Swal.fire('Info', 'Tidak ada data untuk diexport', 'info');
+            return;
+        }
+
+        let csvContent = "data:text/csv;charset=utf-8,";
+        csvContent += "No,Nama,No. HP,Jumlah,Status,Waktu Hadir,QR Code\n";
+
+        guestsData.forEach((row, index) => {
+            const nama = `"${(row.nama || '').replace(/"/g, '""')}"`;
+            const no_hp = `"${row.no_hp || ''}"`;
+            const jumlah = row.jumlah || '1';
+            const status = row.status || 'Belum';
+            const timestamp = row.timestamp || '';
+            const qrCode = row.qrCode || '';
+            
+            csvContent += `${index+1},${nama},${no_hp},${jumlah},${status},${timestamp},${qrCode}\n`;
+        });
+
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `Data_Tamu_${new Date().getTime()}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    function showLoading(show) {
+        const overlay = document.getElementById('loadingOverlay');
+        if (show) {
+            overlay.classList.remove('hidden');
+        } else {
+            overlay.classList.add('hidden');
+        }
+    }
+
+    function escapeHtml(unsafe) {
+        if (typeof unsafe !== 'string') return unsafe;
+        return unsafe
+             .replace(/&/g, "&amp;")
+             .replace(/</g, "&lt;")
+             .replace(/>/g, "&gt;")
+             .replace(/"/g, "&quot;")
+             .replace(/'/g, "&#039;");
+    }
+
+</script>
+
+</body>
+</html>
