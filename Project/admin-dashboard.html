@@ -16,6 +16,9 @@
     <!-- QRCode.js -->
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 
+    <!-- JSZip for Bulk Download -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
     <style>
         /* CSS Variables for Theme */
         :root {
@@ -472,12 +475,22 @@
             margin: 20px auto;
             display: flex;
             justify-content: center;
-            background: #fff;
-            padding: 15px;
-            border-radius: 10px;
-            border: 2px dashed var(--accent);
-            width: 230px;
-            height: 230px;
+            align-items: center;
+            background: #ffffff;
+            padding: 16px;
+            border-radius: 16px;
+            border: 8px solid #ffffff;
+            outline: 2px solid #E8E0D5;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+            width: fit-content;
+            height: auto;
+        }
+
+        #qrcode-container img,
+        #qrcode-container canvas {
+            display: block;
+            border: 4px solid #ffffff;
+            background: #ffffff;
         }
         
         .modal-actions {
@@ -639,7 +652,10 @@
             <div class="admin-panel">
                 <div class="panel-header">
                     <h2 class="floral-title">Daftar Tamu Undangan</h2>
-                    <button class="btn btn-primary" onclick="exportCSV()">📥 Export CSV</button>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button class="btn btn-accent" onclick="downloadAllQR()"><span style="font-size:1.1rem">📦</span> Download Semua QR (ZIP)</button>
+                        <button class="btn btn-primary" onclick="exportCSV()"><span style="font-size:1.1rem">📥</span> Export CSV</button>
+                    </div>
                 </div>
                 
                 <div class="filter-bar">
@@ -740,7 +756,7 @@
      * CONFIGURATION
      */
     const API_URL = 'https://script.google.com/macros/s/AKfycbzOaN2lNR_Qi6KXYpH-8O0TgER9iU0rWzClSFkh1LLmfrp535mI8ONPJWQ5yvxKxqXu/exec'; // Ganti dengan URL Web App Apps Script
-    const UNDANGAN_URL = 'https://mhsahmd.github.io/Project/scanner.html'; // Ganti dengan URL halaman depan (Buku Tamu / Scan)
+    const UNDANGAN_URL = 'YOUR_UNDANGAN_PAGE_URL_HERE'; // Ganti dengan URL halaman depan (Buku Tamu / Scan)
     const WEDDING_TITLE = 'Pernikahan Rezi & Adel';
     const WEDDING_DATE = '17 Oktober 2026';
     const WEDDING_VENUE = 'Kediaman Wanita, Jakarta';
@@ -761,13 +777,13 @@
         document.getElementById('info-date').innerText = WEDDING_DATE;
         document.getElementById('info-venue').innerText = WEDDING_VENUE;
 
-        // Initialize QRCode instance
+        // Initialize QRCode instance (Hitam pekat murni & border putih)
         qrCodeObj = new QRCode(document.getElementById("qrcode-container"), {
-            width: 200,
-            height: 200,
-            colorDark : "#3D2B1F",
+            width: 220,
+            height: 220,
+            colorDark : "#000000",
             colorLight : "#ffffff",
-            correctLevel : QRCode.CorrectLevel.H
+            correctLevel : QRCode.CorrectLevel.M
         });
 
         // Initial Data Load
@@ -1104,7 +1120,10 @@
         }
 
         const qrCodeValue = guest.qrCode || guest.qr || '';
-        const fullLink = `${UNDANGAN_URL}?qr=${qrCodeValue}`;
+        let fullLink = qrCodeValue;
+        if (UNDANGAN_URL && UNDANGAN_URL.startsWith('http')) {
+            fullLink = `${UNDANGAN_URL}${UNDANGAN_URL.includes('?') ? '&' : '?'}qr=${encodeURIComponent(qrCodeValue)}`;
+        }
         document.getElementById('modalQrCodeText').innerText = qrCodeValue;
         
         // Generate QR
@@ -1122,9 +1141,12 @@
     function shareViaWhatsApp() {
         if (!currentGuestForModal) return;
         
-        const nama = currentGuestForModal.nama || 'Bapak/Ibu/Saudara/i';
-        const qrCode = currentGuestForModal.qrCode || '';
-        const linkUndangan = `${UNDANGAN_URL}?qr=${qrCode}`;
+        const nama = currentGuestForModal.nama || currentGuestForModal.name || 'Bapak/Ibu/Saudara/i';
+        const qrCode = currentGuestForModal.qrCode || currentGuestForModal.qr || '';
+        let linkUndangan = qrCode;
+        if (UNDANGAN_URL && UNDANGAN_URL.startsWith('http')) {
+            linkUndangan = `${UNDANGAN_URL}${UNDANGAN_URL.includes('?') ? '&' : '?'}qr=${encodeURIComponent(qrCode)}`;
+        }
         
         const message = `Bismillahirrahmanirrahim
 
@@ -1146,10 +1168,11 @@ Terima kasih atas doa dan kehadirannya. 🙏`;
         const encodedMessage = encodeURIComponent(message);
         
         // If phone number exists, try to send directly
+        const guestPhone = currentGuestForModal.no_hp || currentGuestForModal.nohp || '';
         let waUrl = `https://wa.me/?text=${encodedMessage}`;
-        if (currentGuestForModal.no_hp) {
+        if (guestPhone) {
             // Clean phone number (replace leading 0 with 62)
-            let phone = currentGuestForModal.no_hp.replace(/\D/g, '');
+            let phone = guestPhone.replace(/\D/g, '');
             if (phone.startsWith('0')) phone = '62' + phone.substring(1);
             waUrl = `https://wa.me/${phone}?text=${encodedMessage}`;
         }
@@ -1159,8 +1182,11 @@ Terima kasih atas doa dan kehadirannya. 🙏`;
 
     function copyInvitationLink() {
         if (!currentGuestForModal) return;
-        const qrCode = currentGuestForModal.qrCode || '';
-        const linkUndangan = `${UNDANGAN_URL}?qr=${qrCode}`;
+        const qrCode = currentGuestForModal.qrCode || currentGuestForModal.qr || '';
+        let linkUndangan = qrCode;
+        if (UNDANGAN_URL && UNDANGAN_URL.startsWith('http')) {
+            linkUndangan = `${UNDANGAN_URL}${UNDANGAN_URL.includes('?') ? '&' : '?'}qr=${encodeURIComponent(qrCode)}`;
+        }
         
         navigator.clipboard.writeText(linkUndangan).then(() => {
             Swal.fire({
@@ -1176,26 +1202,290 @@ Terima kasih atas doa dan kehadirannya. 🙏`;
         });
     }
 
-    function downloadQR() {
-        const qrImage = document.querySelector('#qrcode-container img');
-        if (qrImage && qrImage.src) {
+    /**
+     * GENERATE ELEGAN QR CARD DENGAN IDENTITAS PENERIMA
+     */
+    function generateQRCardCanvas(guest) {
+        return new Promise((resolve) => {
+            const tempDiv = document.createElement('div');
+            tempDiv.style.position = 'fixed';
+            tempDiv.style.left = '-9999px';
+            tempDiv.style.top = '-9999px';
+            tempDiv.style.background = '#ffffff';
+            document.body.appendChild(tempDiv);
+            
+            const qrCodeValue = guest.qrCode || guest.qr || '';
+            let fullLink = qrCodeValue;
+            if (UNDANGAN_URL && UNDANGAN_URL.startsWith('http')) {
+                fullLink = `${UNDANGAN_URL}${UNDANGAN_URL.includes('?') ? '&' : '?'}qr=${encodeURIComponent(qrCodeValue)}`;
+            }
+            
+            // Generate QR Code hitam pekat murni pada background putih
+            new QRCode(tempDiv, {
+                text: fullLink,
+                width: 320,
+                height: 320,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.M
+            });
+            
+            setTimeout(() => {
+                const qrCanvas = tempDiv.querySelector('canvas');
+                const qrImg = tempDiv.querySelector('img');
+                
+                const card = document.createElement('canvas');
+                const ctx = card.getContext('2d');
+                
+                const width = 680;
+                const height = 900;
+                card.width = width;
+                card.height = height;
+                
+                // 1. Background Kartu (Putih Bersih)
+                ctx.fillStyle = '#FFFFFF';
+                ctx.fillRect(0, 0, width, height);
+                
+                // 2. Bingkai Elegan (Border luar & dalam)
+                ctx.strokeStyle = '#C9A87C';
+                ctx.lineWidth = 4;
+                ctx.strokeRect(16, 16, width - 32, height - 32);
+                
+                ctx.strokeStyle = '#8B5E3C';
+                ctx.lineWidth = 1.5;
+                ctx.strokeRect(24, 24, width - 48, height - 48);
+                
+                // 3. Header Acara
+                ctx.textAlign = 'center';
+                ctx.fillStyle = '#8B5E3C';
+                ctx.font = 'bold 24px "Playfair Display", Georgia, serif';
+                ctx.fillText((WEDDING_TITLE || 'PERNIKAHAN').toUpperCase(), width / 2, 70);
+                
+                ctx.fillStyle = '#7A5F45';
+                ctx.font = '500 14px "Poppins", Arial, sans-serif';
+                ctx.fillText('KARTU AKSES & KONFIRMASI KEHADIRAN', width / 2, 98);
+                
+                // Garis pemisah dekoratif
+                ctx.strokeStyle = '#E8E0D5';
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.moveTo(90, 115);
+                ctx.lineTo(width - 90, 115);
+                ctx.stroke();
+                
+                // 4. Area QR Code dengan Border Putih Tebal & Bayangan
+                const qrSize = 320;
+                const qrPadding = 24; // Tebal border putih di sekeliling QR
+                const boxW = qrSize + (qrPadding * 2);
+                const boxH = qrSize + (qrPadding * 2);
+                const boxX = (width - boxW) / 2;
+                const boxY = 135;
+                
+                // Bayangan lembut kotak putih QR
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
+                ctx.shadowBlur = 18;
+                ctx.shadowOffsetX = 0;
+                ctx.shadowOffsetY = 6;
+                ctx.fillStyle = '#FFFFFF';
+                ctx.fillRect(boxX, boxY, boxW, boxH);
+                
+                // Reset shadow untuk elemen berikutnya
+                ctx.shadowColor = 'transparent';
+                ctx.shadowBlur = 0;
+                
+                // Garis tepi halus di luar border putih tebal
+                ctx.strokeStyle = '#EBE5DE';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(boxX, boxY, boxW, boxH);
+                
+                // Gambar QR Code (Hitam Pekat Murni) di tengah border putih
+                const qrSource = qrCanvas || qrImg;
+                if (qrSource) {
+                    ctx.drawImage(qrSource, boxX + qrPadding, boxY + qrPadding, qrSize, qrSize);
+                }
+                
+                // 5. Kotak Identitas Penerima QR di Bagian Bawah
+                const infoBoxX = 40;
+                const infoBoxY = 535;
+                const infoBoxW = width - 80;
+                const infoBoxH = 240;
+                
+                // Background kotak identitas
+                ctx.fillStyle = '#FDF8F4';
+                ctx.fillRect(infoBoxX, infoBoxY, infoBoxW, infoBoxH);
+                ctx.strokeStyle = '#C9A87C';
+                ctx.lineWidth = 1.5;
+                ctx.strokeRect(infoBoxX, infoBoxY, infoBoxW, infoBoxH);
+                
+                // Sub-header Penerima
+                ctx.fillStyle = '#8B5E3C';
+                ctx.font = '600 13px "Poppins", Arial, sans-serif';
+                ctx.fillText('KEPADA YTH. TAMU UNDANGAN:', width / 2, infoBoxY + 36);
+                
+                // Nama Tamu (Besar & Tebal)
+                const guestName = (guest.nama || guest.name || 'Tamu Undangan').toUpperCase();
+                let nameFontSize = 26;
+                if (guestName.length > 25) nameFontSize = 21;
+                if (guestName.length > 35) nameFontSize = 17;
+                ctx.fillStyle = '#3D2B1F';
+                ctx.font = `bold ${nameFontSize}px "Playfair Display", Georgia, serif`;
+                ctx.fillText(guestName, width / 2, infoBoxY + 76);
+                
+                // Jumlah Tamu / Pax
+                const paxCount = guest.jumlah || guest.jumlahTamu || guest.pax || 1;
+                ctx.fillStyle = '#8B5E3C';
+                ctx.font = '600 16px "Poppins", Arial, sans-serif';
+                ctx.fillText(`JUMLAH: ${paxCount} ORANG`, width / 2, infoBoxY + 115);
+                
+                // Kode QR Text
+                ctx.fillStyle = '#555555';
+                ctx.font = '500 14px "Poppins", monospace';
+                ctx.fillText(`KODE QR: ${qrCodeValue}`, width / 2, infoBoxY + 148);
+                
+                // Garis pemisah kecil
+                ctx.strokeStyle = '#E2D8CC';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(width / 2 - 100, infoBoxY + 168);
+                ctx.lineTo(width / 2 + 100, infoBoxY + 168);
+                ctx.stroke();
+                
+                // Petunjuk Kehadiran
+                ctx.fillStyle = '#7A5F45';
+                ctx.font = 'italic 13px "Poppins", Arial, sans-serif';
+                ctx.fillText('Tunjukkan QR Code ini kepada petugas penerima tamu saat hadir', width / 2, infoBoxY + 200);
+                
+                // 6. Footer Acara
+                ctx.fillStyle = '#A39282';
+                ctx.font = '13px "Poppins", Arial, sans-serif';
+                ctx.fillText(`${WEDDING_DATE}  •  ${WEDDING_VENUE}`, width / 2, height - 42);
+                
+                document.body.removeChild(tempDiv);
+                resolve(card);
+            }, 120);
+        });
+    }
+
+    /**
+     * DOWNLOAD SATU QR BESERTA IDENTITAS
+     */
+    async function downloadQR() {
+        if (!currentGuestForModal) return;
+        
+        showLoading(true);
+        try {
+            const cardCanvas = await generateQRCardCanvas(currentGuestForModal);
+            const safeName = (currentGuestForModal.nama || currentGuestForModal.name || 'Tamu').replace(/[^a-zA-Z0-9_\-]/g, '_');
+            const qrCode = currentGuestForModal.qrCode || currentGuestForModal.qr || '';
+            
             const a = document.createElement('a');
-            a.href = qrImage.src;
-            a.download = `QRCode_${currentGuestForModal.nama.replace(/\s+/g, '_')}.png`;
+            a.href = cardCanvas.toDataURL("image/png");
+            a.download = `QR_${safeName}_${qrCode}.png`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
-        } else {
-            // Sometime qrcodejs uses canvas if img is not loaded
-            const canvas = document.querySelector('#qrcode-container canvas');
-            if(canvas) {
-                const a = document.createElement('a');
-                a.href = canvas.toDataURL("image/png");
-                a.download = `QRCode_${currentGuestForModal.nama.replace(/\s+/g, '_')}.png`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
+        } catch (err) {
+            console.error('Error generating QR card:', err);
+            Swal.fire('Error', 'Gagal membuat kartu QR: ' + err.message, 'error');
+        } finally {
+            showLoading(false);
+        }
+    }
+
+    /**
+     * DOWNLOAD SEMUA QR SEKALIGUS (BULK ZIP) DENGAN IDENTITAS MASING-MASING
+     */
+    async function downloadAllQR() {
+        if (!guestsData || guestsData.length === 0) {
+            Swal.fire('Info', 'Belum ada data tamu untuk didownload.', 'info');
+            return;
+        }
+
+        if (typeof JSZip === 'undefined') {
+            Swal.fire('Error', 'Library JSZip belum siap. Periksa koneksi internet Anda.', 'error');
+            return;
+        }
+
+        const confirm = await Swal.fire({
+            title: 'Download Semua QR?',
+            html: `Akan membuat <b>${guestsData.length} kartu QR</b> dengan identitas nama masing-masing dalam format ZIP.`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#8B5E3C',
+            cancelButtonColor: '#aaa',
+            confirmButtonText: '📦 Ya, Buat ZIP',
+            cancelButtonText: 'Batal'
+        });
+
+        if (!confirm.isConfirmed) return;
+
+        // Tampilkan dialog progress pembuatan ZIP
+        Swal.fire({
+            title: 'Membuat Kartu QR...',
+            html: `
+                <div style="margin: 15px 0; font-size: 0.95rem;">
+                    Memproses <b id="bulk-curr">0</b> dari <b>${guestsData.length}</b> tamu...
+                </div>
+                <div style="background:#f0e6dd; border-radius:10px; height:12px; width:100%; overflow:hidden;">
+                    <div id="bulk-bar" style="background:#8B5E3C; height:100%; width:0%; transition:width 0.2s;"></div>
+                </div>
+            `,
+            allowOutsideClick: false,
+            showConfirmButton: false
+        });
+
+        try {
+            const zip = new JSZip();
+            const folder = zip.folder("QR_Tamu_Undangan");
+
+            for (let i = 0; i < guestsData.length; i++) {
+                const guest = guestsData[i];
+                const cardCanvas = await generateQRCardCanvas(guest);
+                const dataUrl = cardCanvas.toDataURL("image/png");
+                const base64Data = dataUrl.replace(/^data:image\/png;base64,/, "");
+
+                const safeName = (guest.nama || guest.name || 'Tamu').replace(/[^a-zA-Z0-9_\-]/g, '_');
+                const qrCode = guest.qrCode || guest.qr || ('WD_' + (i + 1));
+                const fileName = `${String(i + 1).padStart(3, '0')}_${safeName}_${qrCode}.png`;
+
+                folder.file(fileName, base64Data, { base64: true });
+
+                // Update progress bar
+                const percent = Math.round(((i + 1) / guestsData.length) * 100);
+                const currEl = document.getElementById('bulk-curr');
+                const barEl = document.getElementById('bulk-bar');
+                if (currEl) currEl.innerText = (i + 1);
+                if (barEl) barEl.style.width = percent + '%';
             }
+
+            Swal.update({
+                title: 'Mengompresi File ZIP...',
+                html: '<div style="margin:15px 0;">Mohon tunggu, proses kompresi sedang berlangsung...</div>'
+            });
+
+            const zipBlob = await zip.generateAsync({ type: 'blob' });
+            
+            // Unduh file ZIP
+            const safeTitle = (WEDDING_TITLE || 'Undangan').replace(/[^a-zA-Z0-9_\-]/g, '_');
+            const downloadUrl = URL.createObjectURL(zipBlob);
+            const a = document.createElement('a');
+            a.href = downloadUrl;
+            a.download = `Semua_QR_${safeTitle}.zip`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(downloadUrl);
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                text: `${guestsData.length} kartu QR telah berhasil didownload dalam file ZIP.`,
+                confirmButtonColor: '#8B5E3C'
+            });
+
+        } catch (err) {
+            console.error('Error bulk download QR:', err);
+            Swal.fire('Error', 'Terjadi kesalahan saat membuat ZIP: ' + err.message, 'error');
         }
     }
 
