@@ -1,0 +1,15 @@
+# robots.txt for PT. Mega Karya Surveyor
+# Website: https://www.megakaryasurveyor.com
+
+User-agent: *
+Allow: /
+Allow: /assets/
+Allow: /assets/images/
+Allow: /assets/css/
+Allow: /assets/js/
+
+# Crawl-delay for polite crawling
+Crawl-delay: 1
+
+# Sitemap Location
+Sitemap: https://www.megakaryasurveyor.com/sitemap.xml
