@@ -1,0 +1,9 @@
+# Robots.txt for Mega Karya Group and Sub-Domains
+User-agent: *
+Allow: /
+Disallow: /assets/private/
+
+# Sitemaps
+Sitemap: https://megakaryagroup.com/sitemap.xml
+Sitemap: https://surveyor.megakaryagroup.com/sitemap.xml
+Sitemap: https://maritim.megakaryagroup.com/sitemap.xml

@@ -1,0 +1,283 @@
+/* ==========================================================================
+   PT. MEGA KARYA SURVEYOR - MODERN MARITIME STYLING (V2 REDESIGN)
+   Theme: High-Tech Nautical Precision & Enterprise Maritime Engineering
+   ========================================================================== */
+
+:root {
+  --color-abyss: #040d1a;
+  --color-navy-dark: #07172b;
+  --color-navy: #0b2545;
+  --color-navy-light: #133863;
+  --color-marine: #0284c7;
+  --color-cyan: #06b6d4;
+  --color-sky: #38bdf8;
+  --color-amber: #f59e0b;
+  --color-wa: #25d366;
+  --color-wa-hover: #1ebd57;
+  --color-card-border: rgba(226, 232, 240, 0.8);
+}
+
+/* Base Smooth Scrolling & Typography */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: #1e293b;
+  background-color: #f8fafc;
+  overflow-x: hidden;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 9px;
+}
+::-webkit-scrollbar-track {
+  background: #040d1a;
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #0284c7, #06b6d4);
+  border-radius: 9999px;
+  border: 2px solid #040d1a;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #38bdf8, #0284c7);
+}
+
+/* Selection Color */
+::selection {
+  background-color: #0284c7;
+  color: #ffffff;
+}
+
+/* ==========================================================================
+   BACKGROUNDS & VISUAL TEXTURES
+   ========================================================================== */
+
+/* Nautical Grid Background Pattern */
+.bg-nautical-grid {
+  background-image: 
+    linear-gradient(to right, rgba(2, 132, 199, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(2, 132, 199, 0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+.bg-nautical-dots {
+  background-image: radial-gradient(rgba(2, 132, 199, 0.15) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.bg-dark-grid {
+  background-image: 
+    linear-gradient(to right, rgba(56, 189, 248, 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(56, 189, 248, 0.06) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+/* Radar Sweep Animation Effect for Hero */
+.radar-circle {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px dashed rgba(56, 189, 248, 0.2);
+  pointer-events: none;
+}
+
+.radar-sweep {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg at 50% 50%, rgba(6, 182, 212, 0.15) 0deg, transparent 60deg, transparent 360deg);
+  animation: radarRotate 10s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes radarRotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Gradient Shimmer Effect on Action Elements */
+.shimmer-badge {
+  background: linear-gradient(90deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0.03) 100%);
+  background-size: 200% 100%;
+  animation: shimmerMove 3.5s infinite;
+}
+
+@keyframes shimmerMove {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* Oceanic Glow Gradients */
+.ocean-gradient {
+  background: radial-gradient(circle at 10% 20%, #0d2847 0%, #040d1a 90%);
+}
+
+.hero-overlay {
+  background: linear-gradient(
+    135deg,
+    rgba(4, 13, 26, 0.94) 0%,
+    rgba(7, 23, 44, 0.88) 45%,
+    rgba(2, 132, 199, 0.5) 100%
+  );
+}
+
+/* Floating Glass Cards */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+}
+
+.glass-panel-dark {
+  background: rgba(11, 37, 69, 0.65);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+}
+
+/* Modern Card Hover Transitions */
+.card-hover {
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.card-hover:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 30px -10px rgba(11, 37, 69, 0.12), 0 10px 15px -8px rgba(2, 132, 199, 0.08);
+}
+
+.service-card-premium {
+  position: relative;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+}
+.service-card-premium::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: linear-gradient(135deg, rgba(2, 132, 199, 0.4), transparent 60%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+.service-card-premium:hover::before {
+  opacity: 1;
+}
+.service-card-premium:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 24px 36px -12px rgba(2, 132, 199, 0.18), 0 10px 18px -6px rgba(11, 37, 69, 0.06);
+}
+
+/* ==========================================================================
+   WHATSAPP & FLOATING INTERACTION STYLES
+   ========================================================================== */
+
+@keyframes wa-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 18px rgba(37, 211, 102, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(37, 211, 102, 0);
+  }
+}
+
+.wa-pulse-effect {
+  animation: wa-pulse 2.2s infinite;
+}
+
+/* Chat Popup Animation (Smooth Slide & Fade) */
+.chat-popup {
+  transform-origin: bottom right;
+  transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), 
+              transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), 
+              visibility 0.3s;
+}
+
+.chat-popup.hidden-popup {
+  opacity: 0;
+  transform: translateY(24px) scale(0.92);
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.chat-popup.active-popup {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+  visibility: visible;
+}
+
+/* Service Category Filter Buttons Active State */
+.service-filter-btn.active {
+  background: #0284c7;
+  color: #ffffff;
+  border-color: #0284c7;
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
+}
+
+/* Modal Backdrop & Animation */
+.modal-overlay {
+  transition: opacity 0.3s ease, visibility 0.3s;
+}
+.modal-overlay.hidden {
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+}
+.modal-overlay:not(.hidden) {
+  opacity: 1;
+  pointer-events: auto;
+  visibility: visible;
+}
+
+/* Marquee / Ticker text continuous slide */
+@keyframes tickerSlide {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: tickerSlide 28s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+/* Glow Dots */
+.glow-dot-green {
+  box-shadow: 0 0 10px rgba(34, 197, 94, 0.8), 0 0 20px rgba(34, 197, 94, 0.4);
+}
+.glow-dot-cyan {
+  box-shadow: 0 0 10px rgba(6, 182, 212, 0.8), 0 0 20px rgba(6, 182, 212, 0.4);
+}
+
+/* Language Toggle Switcher Button */
+.lang-toggle-btn {
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.lang-toggle-btn:hover {
+  transform: translateY(-1px);
+}
+.lang-toggle-btn:active {
+  transform: translateY(0);
+}
+

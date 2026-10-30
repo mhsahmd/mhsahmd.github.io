@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 80" fill="none" class="w-full h-full">
+  <defs>
+    <linearGradient id="mkg-blue-dark" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0a326a"/>
+      <stop offset="100%" stop-color="#1e4f9b"/>
+    </linearGradient>
+    <linearGradient id="mkg-cyan" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00a3e0"/>
+      <stop offset="100%" stop-color="#38bdf8"/>
+    </linearGradient>
+  </defs>
+  <!-- Stylized M Waves -->
+  <path d="M12 56 L34 14 C36 10 40 10 42 14 L50 30 L58 14 C60 10 64 10 66 14 L88 56 C90 60 86 64 81 64 L70 64 C67 64 64 62 63 59 L54 36 L50 44 L46 36 L37 59 C36 62 33 64 30 64 L19 64 C14 64 10 60 12 56 Z" fill="url(#mkg-blue-dark)" />
+  <!-- Dynamic swoosh wave underline -->
+  <path d="M8 68 C28 62 45 74 68 67 C78 64 86 66 94 70 C88 74 74 76 64 73 C46 68 32 76 12 75 C10 75 8 71 8 68 Z" fill="url(#mkg-cyan)" />
+</svg>

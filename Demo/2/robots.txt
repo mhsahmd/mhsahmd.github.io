@@ -1,0 +1,11 @@
+# Robots.txt for PT. MEGA KARYA SURVEYOR
+# Website: https://www.megakaryasurveyor.com/
+
+User-agent: *
+Allow: /
+Allow: /assets/css/
+Allow: /assets/js/
+Allow: /assets/images/
+
+# Sitemap Location
+Sitemap: https://www.megakaryasurveyor.com/sitemap.xml
